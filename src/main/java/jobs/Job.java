@@ -19,12 +19,8 @@ public class Job {
      * ツイート送信
      */
     public static void postTweet() {
-        // 前回のツイート格納用変数
-        String latestTweet = "";
-
         // ツイートの内要をS3バケットから取得
         S3 s3 = new S3();
-        List<String> msgList = s3.getTweetList();
 
         // Twitter APIの認証用変数
         Twitter twitter = new TwitterFactory().getInstance();
@@ -52,14 +48,7 @@ public class Job {
         try {
             // 前回のツイート内容を取得
             ResponseList<Status> latestTweets = twitter.getHomeTimeline();
-            latestTweet = latestTweets.get(0).getText();
 
-            // 前回のツイート内容と重複していないものを選択
-            String tweet = decideTweetContent(msgList, latestTweet);
-
-            // ツイート内容を投稿
-            twitter.updateStatus(tweet);
-            s3.putLog("send", tweet);
         } catch (TwitterException e) {
             s3.putLog("TwitterException", e.getMessage());
         }
