@@ -1,8 +1,7 @@
 package jobs;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,38 +11,13 @@ import org.junit.jupiter.api.Test;
 public class JobTest {
 
     @Test
-    public void postTweet() {
-        try {
-            Job.postTweet();
-        } catch (Exception e) {
-            fail();
-        }
+    public void test_handleRequest_ok() {
+        Job.postTweet();
+        assertTrue(true);
     }
 
     @Test
-    public void test_decideTweetContent_listSize_zero() {
-        String[] ary = {};
-        List<String> msgList = Arrays.asList(ary);
-        String latestTweet = "おはよう";
-
-        String returnStr = Job.decideTweetContent(msgList, latestTweet);
-
-        assertNull(returnStr);
-    }
-
-    @Test
-    public void test_decideTweetContent_listSize_one() {
-        String[] ary = { "おはよう" };
-        List<String> msgList = Arrays.asList(ary);
-        String latestTweet = "おはよう";
-
-        String returnStr = Job.decideTweetContent(msgList, latestTweet);
-
-        assertNull(returnStr);
-    }
-
-    @Test
-    public void test_decideTweetContent_decide() {
+    public void test_decideTweetContent_if_true() {
         String[] ary = { "おはよう", "こんにちは", "こんばんは" };
         List<String> msgList = Arrays.asList(ary);
         String latestTweet = "おはよう";
@@ -54,14 +28,14 @@ public class JobTest {
     }
 
     @Test
-    public void test_decideTweetContent_notDecide() {
-        String[] ary = { "おはよう", "おはよう", "おはよう" };
+    public void test_decideTweetContent_if_false() {
+        String[] ary = { "おはよう", "こんにちは", "こんばんは" };
         List<String> msgList = Arrays.asList(ary);
         String latestTweet = "おはよう";
 
         String returnStr = Job.decideTweetContent(msgList, latestTweet);
 
-        assertNull(returnStr);
+        assertNotEquals(returnStr, latestTweet);
     }
 
 }

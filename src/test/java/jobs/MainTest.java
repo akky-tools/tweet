@@ -1,17 +1,14 @@
 package jobs;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 public class MainTest {
     @Test
     public void test_main() {
-        try {
-            String[] args = null;
-            Main.main(args);
-        } catch (Exception e) {
-            fail();
-        }
+        String[] args = null;
+        Main.main(args);
+        assertTrue(true);
     }
 }

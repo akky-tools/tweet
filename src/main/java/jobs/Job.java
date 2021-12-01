@@ -2,6 +2,7 @@ package jobs;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 import common.PropertiesValue;
 import common.S3;
@@ -18,7 +19,12 @@ public class Job {
      * ツイート送信
      */
     public static void postTweet() {
+        // 前回のツイート格納用変数
+        String latestTweet = "";
+
+        // ツイートの内要をS3バケットから取得
         S3 s3 = new S3();
+        List<String> msgList = s3.getTweetList();
 
         // Twitter APIの認証用変数
         Twitter twitter = new TwitterFactory().getInstance();
@@ -44,12 +50,6 @@ public class Job {
 
         // ツイート処理
         try {
-            // 前回のツイート格納用変数
-            String latestTweet = "";
-
-            // ツイートの内要をS3バケットから取得
-            List<String> msgList = s3.getTweetList();
-
             // 前回のツイート内容を取得
             ResponseList<Status> latestTweets = twitter.getHomeTimeline();
             latestTweet = latestTweets.get(0).getText();
@@ -58,8 +58,8 @@ public class Job {
             String tweet = decideTweetContent(msgList, latestTweet);
 
             // ツイート内容を投稿
-            // twitter.updateStatus(tweet);
-            // s3.putLog("send", tweet);
+            twitter.updateStatus(tweet);
+            s3.putLog("send", tweet);
         } catch (TwitterException e) {
             s3.putLog("TwitterException", e.getMessage());
         }
@@ -73,8 +73,9 @@ public class Job {
      * @return ツイート予定内容
      */
     public static String decideTweetContent(List<String> msgList, String latestTweet) {
+        Random rnd = new Random();
         int listSize = msgList.size();
-        int idx = 0;
+        int idx = rnd.nextInt(listSize);
 
         if (listSize == 0) {
             return null;
@@ -83,15 +84,17 @@ public class Job {
         } else {
             for (String msg : msgList) {
                 if (msg.equals(latestTweet)) {
-                    idx++;
                     continue;
-                } else {
-                    return msgList.get(idx);
                 }
+                return null;
             }
         }
 
-        return null;
+        if (msgList.get(idx).equals(latestTweet)) {
+            decideTweetContent(msgList, latestTweet);
+        }
+
+        return msgList.get(idx);
     }
 
 }
