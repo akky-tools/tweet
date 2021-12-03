@@ -1,11 +1,11 @@
 package jobs;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import common.PropertiesValue;
-import common.S3;
 import twitter4j.ResponseList;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -14,21 +14,17 @@ import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 
 public class Job {
-
     /**
-     * ツイート送信
+     * Twitter接続処理
      */
-    public static void postTweet() {
-        // ツイートの内要をS3バケットから取得
-        S3 s3 = new S3();
-
-        // Twitter APIの認証用変数
-        Twitter twitter = new TwitterFactory().getInstance();
+    public static void connection() {
         PropertiesValue propertiesValue = new PropertiesValue();
         String consumerKey = "";
         String consumerSecret = "";
         String accessToken = "";
         String accessTokenSecret = "";
+        int userIdCount = 0;
+        List<Long> userIdList = new ArrayList<Long>();
 
         // Twitter API認証処理
         try {
@@ -36,54 +32,95 @@ public class Job {
             consumerSecret = propertiesValue.getPropatiesValue("consumerSecret");
             accessToken = propertiesValue.getPropatiesValue("accessToken");
             accessTokenSecret = propertiesValue.getPropatiesValue("accessTokenSecret");
+            userIdCount = Integer.parseInt(propertiesValue.getPropatiesValue("userIdCount"));
+            for (int i = 1; i <= userIdCount; i++) {
+                userIdList.add(Long.parseLong(propertiesValue.getPropatiesValue("id_" + i)));
+            }
         } catch (IOException e) {
-            s3.putLog("IOException", e.getMessage());
-        } finally {
-            // 認証処理
-            twitter.setOAuthConsumer(consumerKey, consumerSecret);
-            twitter.setOAuthAccessToken(new AccessToken(accessToken, accessTokenSecret));
+            System.out.println(("*****IOException*****"));
+            System.out.println(e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println(("*****NumberFormatException*****"));
+            System.out.println(e.getMessage());
         }
 
-        // ツイート処理
-        try {
-            // 前回のツイート内容を取得
-            ResponseList<Status> latestTweets = twitter.getHomeTimeline();
+        // Twitter API認証処理
+        Twitter twitter = new TwitterFactory().getInstance();
+        twitter.setOAuthConsumer(consumerKey, consumerSecret);
+        twitter.setOAuthAccessToken(new AccessToken(accessToken, accessTokenSecret));
 
+        for (Long userId : userIdList) {
+            getTimelines(twitter, userId);
+        }
+
+        // ユーザーID調査用
+        getUserId(twitter, "displayName");
+
+    }
+
+    /**
+     * ユーザーのタイムラインを取得
+     * 
+     * @param twitter 接続済みのTwitterオブジェクト
+     * @param userId  TwitterのユーザーID
+     */
+    public static void getTimelines(Twitter twitter, Long userId) {
+        String asterisk = "****************************************************";
+        try {
+            ResponseList<Status> list = twitter.getUserTimeline(userId);
+            System.out.println(asterisk);
+            System.out.println("*");
+            String name = list.size() > 0 ? list.get(0).getUser().getName().toString() : "データなし";
+            String displayName = list.size() > 0 ? list.get(0).getUser().getScreenName().toString() : "データなし";
+            System.out.println("*\tname : " + name);
+            System.out.println("*\tlink : https://twitter.com/" + displayName);
+            System.out.println("*");
+            System.out.println(asterisk + "\n");
+
+            int showCount = 5;
+            SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd E HH:mm:ss");
+            for (Status status : list) {
+                System.out.println(df.format(status.getCreatedAt()));
+                System.out.println(status.getText());
+                System.out.println("\n" + "----------------------------------------------------" + "\n");
+                if (showCount-- == 1) {
+                    break;
+                }
+            }
         } catch (TwitterException e) {
-            s3.putLog("TwitterException", e.getMessage());
+            System.out.println(("*****TwitterException*****"));
+            System.out.println(e.getMessage());
+        } catch (NullPointerException e) {
+            System.out.println(("*****NullPointerException*****"));
+            System.out.println(e.getMessage());
         }
     }
 
     /**
-     * ツイート内容を確定させる
+     * ユーザーIDを取得
      * 
-     * @param msgList     ツイート候補の内容リスト
-     * @param latestTweet 前回のツイート内容
-     * @return ツイート予定内容
+     * @param twitter     接続済みのTwitterオブジェクト
+     * @param displayName Twitterの画面表示名（@以降の値）
      */
-    public static String decideTweetContent(List<String> msgList, String latestTweet) {
-        Random rnd = new Random();
-        int listSize = msgList.size();
-        int idx = rnd.nextInt(listSize);
-
-        if (listSize == 0) {
-            return null;
-        } else if (listSize == 1 && msgList.get(0).equals(latestTweet)) {
-            return null;
-        } else {
-            for (String msg : msgList) {
-                if (msg.equals(latestTweet)) {
-                    continue;
-                }
-                return null;
-            }
+    public static void getUserId(Twitter twitter, String displayName) {
+        String asterisk = "****************************************************";
+        try {
+            ResponseList<Status> list = twitter.getUserTimeline(displayName);
+            System.out.println(asterisk);
+            System.out.println("*");
+            String name = list.size() > 0 ? list.get(0).getUser().getName().toString() : "データなし";
+            String userId = list.size() > 0 ? String.valueOf(list.get(0).getUser().getId()) : "データなし";
+            System.out.println("*\tname : " + name);
+            System.out.println("*\ti  d : " + userId);
+            System.out.println("*");
+            System.out.println(asterisk + "\n");
+        } catch (TwitterException e) {
+            System.out.println(("*****TwitterException*****"));
+            System.out.println(e.getMessage());
+        } catch (NullPointerException e) {
+            System.out.println(("*****NullPointerException*****"));
+            System.out.println(e.getMessage());
         }
-
-        if (msgList.get(idx).equals(latestTweet)) {
-            decideTweetContent(msgList, latestTweet);
-        }
-
-        return msgList.get(idx);
     }
 
 }
