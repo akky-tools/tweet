@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 public class JobTest {
 
     @Test
-    public void test_getTweet() {
+    public void test_connection() {
         try {
-            Job.getTweet();
+            Job.connection();
         } catch (Exception e) {
             fail();
         }
