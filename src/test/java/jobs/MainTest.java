@@ -8,7 +8,7 @@ public class MainTest {
     @Test
     public void test_main() {
         try {
-            String[] args = null;
+            String[] args = { "timeline", "" };
             Main.main(args);
         } catch (Exception e) {
             fail();
