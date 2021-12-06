@@ -9,7 +9,7 @@ public class JobTest {
     @Test
     public void test_connection() {
         try {
-            Job.connection();
+            Job.connection("timeline", "");
         } catch (Exception e) {
             fail();
         }
