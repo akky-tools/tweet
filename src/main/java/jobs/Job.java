@@ -20,18 +20,16 @@ import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 
 public class Job {
-    final static Logger logger = Logger.getLogger("TweetLogging");
+    final static Logger logger = Logger.getLogger("JobLogging");
     final static String asterisk = "****************************************************";
 
     /**
      * Twitter接続処理
      * 
-     * @param mode        timeline：タイムラインを取得、id：ユーザーIDを取得
+     * @param mode        1：タイムラインを取得、2：ユーザーIDを取得
      * @param displayName ID検索用のTwitter画面表示名（@以降の値）
      */
-    public static void connection(String mode, String displayName) {
-        System.out.println("処理開始");
-
+    public static void connection(int mode, String displayName) {
         String consumerKey = "";
         String consumerSecret = "";
         String accessToken = "";
@@ -54,42 +52,37 @@ public class Job {
                 userIdList.add(Long.parseLong(rb.getString("id_" + i)));
             }
 
-            // 出力ファイル
-            FileWriter file = new FileWriter(outputPath, false);
-            printWriter = new PrintWriter(new BufferedWriter(file));
-
             // Twitter API認証処理
             Twitter twitter = new TwitterFactory().getInstance();
             twitter.setOAuthConsumer(consumerKey, consumerSecret);
             twitter.setOAuthAccessToken(new AccessToken(accessToken, accessTokenSecret));
 
             switch (mode) {
-            case "timeline":
+            case 1: // タイムライン取得
+                FileWriter file = new FileWriter(outputPath, false);
+                printWriter = new PrintWriter(new BufferedWriter(file));
+
+                System.out.println("\nタイムライン取得中。。。");
                 for (Long userId : userIdList) {
                     getTimelines(printWriter, twitter, userId);
                 }
-                logger.log(Level.INFO, "ファイルを出力しました。\nパス：" + outputPath);
-                return;
-            case "id":
-                getUserId(printWriter, twitter, displayName);
-                return;
-            default:
-                logger.log(Level.INFO, "指定のモードは存在しません。\n【モード】\n①timeline：タイムラインを取得\n②id：ユーザーIDを取得");
+
+                System.out.println("\nファイルを出力しました。\nパス：" + outputPath + "\n");
+                printWriter.close();
+                break;
+            case 2: // ユーザーID取得
+                getUserId(twitter, displayName);
             }
-
+            Thread.sleep(10000);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "*****IOException*****");
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "*****IOException*****\n" + e.getMessage());
         } catch (NumberFormatException e) {
-            logger.log(Level.SEVERE, "*****NumberFormatException*****");
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "*****NumberFormatException*****\n" + e.getMessage());
         } catch (MissingResourceException e) {
-            logger.log(Level.SEVERE, "*****MissingResourceException*****");
-            logger.log(Level.SEVERE, e.getMessage());
-        } finally {
-            printWriter.close();
+            logger.log(Level.SEVERE, "*****MissingResourceException*****\n" + e.getMessage());
+        } catch (InterruptedException e) {
+            logger.log(Level.SEVERE, "*****InterruptedException*****\n" + e.getMessage());
         }
-
     }
 
     /**
@@ -122,39 +115,34 @@ public class Job {
                 }
             }
         } catch (TwitterException e) {
-            logger.log(Level.SEVERE, "*****TwitterException*****");
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "*****TwitterException*****\n" + e.getMessage());
         } catch (NullPointerException e) {
-            logger.log(Level.SEVERE, "*****NullPointerException*****");
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "*****NullPointerException*****\n" + e.getMessage());
         }
     }
 
     /**
      * ユーザーIDを取得
      * 
-     * @param printWriter ファイル出力用の変数
      * @param twitter     接続済みのTwitterオブジェクト
      * @param displayName Twitter画面表示名（@以降の値）
      */
-    public static void getUserId(PrintWriter printWriter, Twitter twitter, String displayName) {
+    public static void getUserId(Twitter twitter, String displayName) {
         try {
+            System.out.println("\nユーザーIDを出力します。\n");
             ResponseList<Status> list = twitter.getUserTimeline(displayName);
-            logger.log(Level.INFO, asterisk);
-            logger.log(Level.INFO, "*");
+            System.out.println(asterisk);
+            System.out.println("*");
             String name = list.size() > 0 ? list.get(0).getUser().getName().toString() : "データなし";
             String userId = list.size() > 0 ? String.valueOf(list.get(0).getUser().getId()) : "データなし";
-            logger.log(Level.INFO, "*\tname : " + name);
-            logger.log(Level.INFO, "*\ti  d : " + userId);
-            logger.log(Level.INFO, "*");
-            logger.log(Level.INFO, asterisk + "\n");
+            System.out.println("*\tname : " + name);
+            System.out.println("*\ti  d : " + userId);
+            System.out.println("*");
+            System.out.println(asterisk + "\n");
         } catch (TwitterException e) {
-            logger.log(Level.SEVERE, "*****TwitterException*****");
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "*****TwitterException*****\n" + e.getMessage());
         } catch (NullPointerException e) {
-            logger.log(Level.SEVERE, "*****NullPointerException*****");
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "*****NullPointerException*****\n" + e.getMessage());
         }
     }
-
 }
