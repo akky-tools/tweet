@@ -18,41 +18,56 @@ public class Main {
      */
     public static void main(String[] args) {
         final Logger logger = Logger.getLogger("MainLogging");
+        int mode = 0;
+        int tmpMode = 0;
+        int missingCount = 0;
 
-        int mode, tmpMode = 0;
         while (true) {
-            tmpMode = inputMode();
+            tmpMode = args.length == 0 ? inputMode() : Integer.parseInt(args[0]);
             if (tmpMode != 1 && tmpMode != 2) {
                 System.out.println("\n選択されたモード番号は存在しません。\n");
             } else {
                 mode = tmpMode;
                 break;
             }
+
+            if (++missingCount == 5) {
+                System.out.println("正しいモード番号が選択されないため、処理を終了します。\n");
+                break;
+            }
         }
 
         String displayName = "";
         if (mode == 2) {
+            missingCount = 0;
             String tmpDisplayName = "";
             while (true) {
-                tmpDisplayName = inputDisplayName();
+                tmpDisplayName = args.length == 0 ? inputDisplayName() : args[1];
                 if (tmpDisplayName.length() == 0) {
                     System.out.println("\n画面表示名が入力されていません。\n");
                 } else {
                     displayName = tmpDisplayName;
                     break;
                 }
+
+                if (++missingCount == 5) {
+                    System.out.println("画面表示名が入力されないため、処理を終了します。\n");
+                    break;
+                }
             }
         }
 
-        Job.connection(mode, displayName);
-
-        scanner.close();
-        System.out.println("処理を終了します。。。");
+        if (missingCount < 5) {
+            Job.connection(mode, displayName);
+        }
 
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "*****InterruptedException*****\n" + e.getMessage());
+        } finally {
+            scanner.close();
+            System.out.println("処理を終了します。。。");
         }
     }
 

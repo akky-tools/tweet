@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,24 +29,19 @@ public class Job {
      * @param displayName ID検索用のTwitter画面表示名（@以降の値）
      */
     public static void connection(int mode, String displayName) {
-        String consumerKey = "";
-        String consumerSecret = "";
-        String accessToken = "";
-        String accessTokenSecret = "";
-        String outputPath = "";
-        int userIdCount = 0;
-        List<Long> userIdList = new ArrayList<Long>();
-        PrintWriter printWriter = null;
-
         try {
             // 設定値を取得
+            PrintWriter printWriter = null;
             ResourceBundle rb = ResourceBundle.getBundle("application");
-            consumerKey = rb.getString("consumerKey");
-            consumerSecret = rb.getString("consumerSecret");
-            accessToken = rb.getString("accessToken");
-            accessTokenSecret = rb.getString("accessTokenSecret");
-            userIdCount = Integer.parseInt(rb.getString("userIdCount"));
-            outputPath = rb.getString("outputPath");
+
+            String consumerKey = rb.getString("consumerKey");
+            String consumerSecret = rb.getString("consumerSecret");
+            String accessToken = rb.getString("accessToken");
+            String accessTokenSecret = rb.getString("accessTokenSecret");
+            String outputPath = rb.getString("outputPath");
+
+            int userIdCount = Integer.parseInt(rb.getString("userIdCount"));
+            List<Long> userIdList = new ArrayList<Long>();
             for (int i = 1; i <= userIdCount; i++) {
                 userIdList.add(Long.parseLong(rb.getString("id_" + i)));
             }
@@ -76,10 +70,6 @@ public class Job {
             Thread.sleep(10000);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "*****IOException*****\n" + e.getMessage());
-        } catch (NumberFormatException e) {
-            logger.log(Level.SEVERE, "*****NumberFormatException*****\n" + e.getMessage());
-        } catch (MissingResourceException e) {
-            logger.log(Level.SEVERE, "*****MissingResourceException*****\n" + e.getMessage());
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "*****InterruptedException*****\n" + e.getMessage());
         }
@@ -97,8 +87,8 @@ public class Job {
             ResponseList<Status> list = twitter.getUserTimeline(userId);
             printWriter.println(asterisk);
             printWriter.println("*");
-            String name = list.size() > 0 ? list.get(0).getUser().getName().toString() : "データなし";
-            String displayName = list.size() > 0 ? list.get(0).getUser().getScreenName().toString() : "データなし";
+            String name = list.get(0).getUser().getName().toString();
+            String displayName = list.get(0).getUser().getScreenName().toString();
             printWriter.println("*\tname : " + name);
             printWriter.println("*\tlink : https://twitter.com/" + displayName);
             printWriter.println("*");
@@ -116,8 +106,6 @@ public class Job {
             }
         } catch (TwitterException e) {
             logger.log(Level.SEVERE, "*****TwitterException*****\n" + e.getMessage());
-        } catch (NullPointerException e) {
-            logger.log(Level.SEVERE, "*****NullPointerException*****\n" + e.getMessage());
         }
     }
 
@@ -133,16 +121,14 @@ public class Job {
             ResponseList<Status> list = twitter.getUserTimeline(displayName);
             System.out.println(asterisk);
             System.out.println("*");
-            String name = list.size() > 0 ? list.get(0).getUser().getName().toString() : "データなし";
-            String userId = list.size() > 0 ? String.valueOf(list.get(0).getUser().getId()) : "データなし";
+            String name = list.get(0).getUser().getName().toString();
+            String userId = String.valueOf(list.get(0).getUser().getId());
             System.out.println("*\tname : " + name);
             System.out.println("*\ti  d : " + userId);
             System.out.println("*");
             System.out.println(asterisk + "\n");
         } catch (TwitterException e) {
             logger.log(Level.SEVERE, "*****TwitterException*****\n" + e.getMessage());
-        } catch (NullPointerException e) {
-            logger.log(Level.SEVERE, "*****NullPointerException*****\n" + e.getMessage());
         }
     }
 }
