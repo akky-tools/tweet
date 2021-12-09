@@ -62,12 +62,11 @@ public class Main {
         }
 
         try {
+            scanner.close();
+            System.out.println("処理を終了します。。。");
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "*****InterruptedException*****\n" + e.getMessage());
-        } finally {
-            scanner.close();
-            System.out.println("処理を終了します。。。");
         }
     }
 

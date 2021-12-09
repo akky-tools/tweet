@@ -67,11 +67,8 @@ public class Job {
             case 2: // ユーザーID取得
                 getUserId(twitter, displayName);
             }
-            Thread.sleep(10000);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "*****IOException*****\n" + e.getMessage());
-        } catch (InterruptedException e) {
-            logger.log(Level.SEVERE, "*****InterruptedException*****\n" + e.getMessage());
         }
     }
 

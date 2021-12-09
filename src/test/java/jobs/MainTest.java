@@ -83,7 +83,7 @@ public class MainTest {
             logger.log(Level.INFO, "test_main_inputMode_ok　開始");
             Main.inputMode();
         } catch (Exception e) {
-            fail();
+            logger.log(Level.SEVERE, "モード番号入力エラー発生!!\nエラーメッセージ：" + e.getMessage());
         } finally {
             logger.log(Level.INFO, "test_main_inputMode_ok　終了\n");
         }
@@ -98,7 +98,7 @@ public class MainTest {
             logger.log(Level.INFO, "test_main_inputDisplayName_ok　開始");
             Main.inputDisplayName();
         } catch (Exception e) {
-            fail();
+            logger.log(Level.SEVERE, "画面表示名入力エラー発生!!\nエラーメッセージ" + e.getMessage());
         } finally {
             logger.log(Level.INFO, "test_main_inputDisplayName_ok　終了\n");
         }
